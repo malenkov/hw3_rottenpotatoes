@@ -21,8 +21,28 @@ end
 #  "When I uncheck the following ratings: PG, G, R"
 #  "When I check the following ratings: G"
 
-When /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
+Given /I (un)?check the following ratings: (.*)/ do |uncheck, rating_list|
   # HINT: use String#split to split up the rating_list, then
   #   iterate over the ratings and reuse the "When I check..." or
   #   "When I uncheck..." steps in lines 89-95 of web_steps.rb
+  ratings = rating_list.split(',')
+
+  ratings.each do |rating|
+    if (uncheck != 'un')
+      step %{I check "ratings_#{rating.strip}"}
+    else
+      step %{I uncheck "ratings_#{rating.strip}"}
+    end
+  end
+end
+
+Then /I should see all of the movies/ do
+  tr_count = page.all("tbody#movielist tr").count
+  db_count = Movie.all.count
+  assert tr_count == db_count
+end
+
+Then /I should see none of the movies/ do
+  tr_count = page.all("tbody#movielist tr").count
+  assert tr_count == 0
 end
